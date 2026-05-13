@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, Clock, DollarSign, AlertTriangle, User, Calendar } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, AlertTriangle, User, Calendar } from 'lucide-react';
 import { Escrow, EscrowStatus } from '../types';
 import { useContract } from '../hooks/useContract';
 

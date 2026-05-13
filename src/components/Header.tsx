@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, Zap, Lock, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Button, SectionLabel, Glow, CreditCardGraphic } from './DesignComponents';
+import { Button, SectionLabel, CreditCardGraphic } from './DesignComponents';
 
 interface HeaderProps {
   onConnectWallet: () => void;
