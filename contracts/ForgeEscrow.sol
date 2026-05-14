@@ -365,7 +365,6 @@ contract ForgeEscrow {
     
     /// @notice Get escrow details
     /// @param _escrowId The ID of the escrow
-    /// @return Escrow struct with all details
     function getEscrow(uint256 _escrowId) 
         external 
         view 
@@ -405,7 +404,6 @@ contract ForgeEscrow {
     /// @notice Get milestone details
     /// @param _escrowId The ID of the escrow
     /// @param _milestoneIndex The index of the milestone
-    /// @return Milestone struct with all details
     function getMilestone(uint256 _escrowId, uint256 _milestoneIndex) 
         external 
         view 

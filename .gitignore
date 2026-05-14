@@ -33,6 +33,12 @@ out/
 .env.local
 .env.*.local
 
+# Hardhat
+artifacts/
+cache/
+dist-hardhat/
+typechain-types/
+
 # npm cache directory
 .npm
 *.tgz

@@ -2,25 +2,12 @@ import { useState } from 'react';
 import { BrowserProvider, Contract, parseEther, formatEther } from 'ethers';
 import toast from 'react-hot-toast';
 import { Escrow, Milestone } from '../types';
+import { FORGE_ESCROW_ABI } from '../abi/ForgeEscrow';
 
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // Mock address
-
-const CONTRACT_ABI = [
-  'function createEscrow(address _freelancer, string _title, string _description, string[] _milestoneDescriptions, uint256[] _milestoneAmounts, uint256 _deadline) external returns (uint256)',
-  'function fundEscrow(uint256 _escrowId) external payable',
-  'function completeMilestone(uint256 _escrowId, uint256 _milestoneIndex) external',
-  'function approveMilestone(uint256 _escrowId, uint256 _milestoneIndex) external',
-  'function cancelEscrow(uint256 _escrowId) external',
-  'function raiseDispute(uint256 _escrowId) external',
-  'function getEscrow(uint256 _escrowId) external view returns (uint256, address, address, uint256, uint256, uint256, string, string, uint8, uint256, uint256, bool)',
-  'function getMilestone(uint256 _escrowId, uint256 _milestoneIndex) external view returns (string, uint256, bool, bool, uint256)',
-  'function getMilestoneCount(uint256 _escrowId) external view returns (uint256)',
-  'function getClientEscrows(address _client) external view returns (uint256[])',
-  'function getFreelancerEscrows(address _freelancer) external view returns (uint256[])',
-  'event EscrowCreated(uint256 indexed escrowId, address indexed client, address indexed freelancer, uint256 totalAmount)',
-  'event MilestoneCompleted(uint256 indexed escrowId, uint256 milestoneIndex)',
-  'event MilestoneApproved(uint256 indexed escrowId, uint256 milestoneIndex, uint256 amount)',
-];
+// Updated by deploy script — see deployments/liteforge.json for details
+const CONTRACT_ADDRESS =
+  import.meta.env.VITE_CONTRACT_ADDRESS ||
+  '0x0000000000000000000000000000000000000000';
 
 export const useContract = () => {
   const [loading, setLoading] = useState(false);
@@ -31,7 +18,7 @@ export const useContract = () => {
     }
     const provider = new BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
-    return new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+    return new Contract(CONTRACT_ADDRESS, FORGE_ESCROW_ABI, signer);
   };
 
   const createEscrow = async (
@@ -59,7 +46,7 @@ export const useContract = () => {
       toast.loading('Creating escrow...', { id: 'create' });
       await tx.wait();
       toast.success('Escrow created successfully!', { id: 'create' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error creating escrow:', error);
@@ -75,13 +62,13 @@ export const useContract = () => {
     try {
       const contract = await getContract();
       const tx = await contract.fundEscrow(escrowId, {
-        value: parseEther(amount)
+        value: parseEther(amount),
       });
 
       toast.loading('Funding escrow...', { id: 'fund' });
       await tx.wait();
       toast.success('Escrow funded successfully!', { id: 'fund' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error funding escrow:', error);
@@ -101,7 +88,7 @@ export const useContract = () => {
       toast.loading('Marking milestone as complete...', { id: 'complete' });
       await tx.wait();
       toast.success('Milestone marked as complete!', { id: 'complete' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error completing milestone:', error);
@@ -121,7 +108,7 @@ export const useContract = () => {
       toast.loading('Approving milestone...', { id: 'approve' });
       await tx.wait();
       toast.success('Milestone approved and payment released!', { id: 'approve' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error approving milestone:', error);
@@ -141,7 +128,7 @@ export const useContract = () => {
       toast.loading('Raising dispute...', { id: 'dispute' });
       await tx.wait();
       toast.success('Dispute raised successfully', { id: 'dispute' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error raising dispute:', error);
@@ -194,10 +181,10 @@ export const useContract = () => {
   const getUserEscrows = async (address: string, isClient: boolean): Promise<number[]> => {
     try {
       const contract = await getContract();
-      const escrowIds = isClient 
+      const escrowIds = isClient
         ? await contract.getClientEscrows(address)
         : await contract.getFreelancerEscrows(address);
-      
+
       return escrowIds.map((id: bigint) => Number(id));
     } catch (error) {
       console.error('Error fetching user escrows:', error);
