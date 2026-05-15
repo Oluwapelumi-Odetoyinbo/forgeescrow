@@ -22,10 +22,8 @@ export const Header = ({ onConnectWallet, walletAddress, balance }: HeaderProps)
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatBalance = (bal: string) => {
-    const ethBalance = parseFloat(bal) / 1e18;
-    return ethBalance.toFixed(4);
-  };
+  // Balance is now pre-formatted by the useWallet hook
+  const formatBalance = (bal: string) => bal;
 
   return (
     <>

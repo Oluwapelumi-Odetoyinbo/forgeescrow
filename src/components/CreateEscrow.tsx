@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Calendar, DollarSign, User, FileText, Target } from 'lucide-react';
+import { Plus, Trash2, DollarSign, User, FileText, Target, Calendar } from 'lucide-react';
 import { useContract } from '../hooks/useContract';
+import { DatePicker } from './DatePicker';
 import toast from 'react-hot-toast';
 
 interface CreateEscrowProps {
@@ -20,8 +21,8 @@ export const CreateEscrow = ({ onSuccess }: CreateEscrowProps) => {
     freelancer: '',
     title: '',
     description: '',
-    deadline: '',
   });
+  const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [milestones, setMilestones] = useState<MilestoneInput[]>([
     { description: '', amount: '' }
   ]);
@@ -52,7 +53,7 @@ export const CreateEscrow = ({ onSuccess }: CreateEscrowProps) => {
     e.preventDefault();
 
     if (step === 1) {
-      if (!formData.freelancer || !formData.title || !formData.description || !formData.deadline) {
+      if (!formData.freelancer || !formData.title || !formData.description || !deadline) {
         toast.error('Please fill in all fields');
         return;
       }
@@ -66,7 +67,7 @@ export const CreateEscrow = ({ onSuccess }: CreateEscrowProps) => {
       return;
     }
 
-    const deadlineTimestamp = Math.floor(new Date(formData.deadline).getTime() / 1000);
+    const deadlineTimestamp = Math.floor(deadline!.getTime() / 1000);
     const success = await createEscrow(
       formData.freelancer,
       formData.title,
@@ -76,7 +77,8 @@ export const CreateEscrow = ({ onSuccess }: CreateEscrowProps) => {
     );
 
     if (success) {
-      setFormData({ freelancer: '', title: '', description: '', deadline: '' });
+      setFormData({ freelancer: '', title: '', description: '' });
+      setDeadline(undefined);
       setMilestones([{ description: '', amount: '' }]);
       setStep(1);
       onSuccess();
@@ -166,11 +168,10 @@ export const CreateEscrow = ({ onSuccess }: CreateEscrowProps) => {
                   <Calendar className="w-4 h-4 text-primary" />
                   <span>Project Deadline</span>
                 </label>
-                <input
-                  type="datetime-local"
-                  value={formData.deadline}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200"
+                <DatePicker
+                  value={deadline}
+                  onChange={setDeadline}
+                  placeholder="Select a deadline date"
                 />
               </div>
 

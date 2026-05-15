@@ -67,3 +67,76 @@ input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px #171717 inset;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* ─── Date Picker (react-day-picker) dark theme ─── */
+.rdp-forge {
+  --rdp-cell-size: 36px;
+  --rdp-accent-color: #c5f015;
+  --rdp-background-color: rgba(197, 240, 21, 0.15);
+  color: #ffffff;
+  font-size: 0.875rem;
+}
+
+.rdp-forge .rdp-caption_label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.rdp-forge .rdp-nav_button {
+  color: #a3a3a3;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+}
+
+.rdp-forge .rdp-nav_button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.rdp-forge .rdp-head_cell {
+  color: #a3a3a3;
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.rdp-forge .rdp-day {
+  border-radius: 8px;
+  color: #e5e5e5;
+  transition: all 0.15s;
+}
+
+.rdp-forge .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.rdp-forge .rdp-day_selected {
+  background-color: #c5f015 !important;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.rdp-forge .rdp-day_today:not(.rdp-day_selected) {
+  border: 1px solid rgba(197, 240, 21, 0.5);
+  font-weight: 600;
+}
+
+.rdp-forge .rdp-day_disabled {
+  color: #404040;
+}
+
+.rdp-forge .rdp-day_outside {
+  color: #525252;
+}
+
+/* Radix popover animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-in {
+  animation: fadeIn 0.15s ease-out;
+}

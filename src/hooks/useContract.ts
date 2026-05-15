@@ -2,32 +2,21 @@ import { useState } from 'react';
 import { BrowserProvider, Contract, parseEther, formatEther } from 'ethers';
 import toast from 'react-hot-toast';
 import { Escrow, Milestone } from '../types';
-
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // Mock address
-
-const CONTRACT_ABI = [
-  'function createEscrow(address _freelancer, string _title, string _description, string[] _milestoneDescriptions, uint256[] _milestoneAmounts, uint256 _deadline) external returns (uint256)',
-  'function fundEscrow(uint256 _escrowId) external payable',
-  'function completeMilestone(uint256 _escrowId, uint256 _milestoneIndex) external',
-  'function approveMilestone(uint256 _escrowId, uint256 _milestoneIndex) external',
-  'function cancelEscrow(uint256 _escrowId) external',
-  'function raiseDispute(uint256 _escrowId) external',
-  'function getEscrow(uint256 _escrowId) external view returns (uint256, address, address, uint256, uint256, uint256, string, string, uint8, uint256, uint256, bool)',
-  'function getMilestone(uint256 _escrowId, uint256 _milestoneIndex) external view returns (string, uint256, bool, bool, uint256)',
-  'function getMilestoneCount(uint256 _escrowId) external view returns (uint256)',
-  'function getClientEscrows(address _client) external view returns (uint256[])',
-  'function getFreelancerEscrows(address _freelancer) external view returns (uint256[])',
-  'event EscrowCreated(uint256 indexed escrowId, address indexed client, address indexed freelancer, uint256 totalAmount)',
-  'event MilestoneCompleted(uint256 indexed escrowId, uint256 milestoneIndex)',
-  'event MilestoneApproved(uint256 indexed escrowId, uint256 milestoneIndex, uint256 amount)',
-];
+import { CONTRACT_ADDRESS, CONTRACT_ABI, isContractConfigured } from '../config/contract';
+import { useMockContract } from './useMockContract';
 
 export const useContract = () => {
+  const mock = useMockContract();
+
+  // If contract is not configured, use mock mode for local testing
+  if (!isContractConfigured()) {
+    return mock;
+  }
   const [loading, setLoading] = useState(false);
 
   const getContract = async () => {
     if (!window.ethereum) {
-      throw new Error('No wallet detected');
+      throw new Error('No wallet detected. Please install MetaMask.');
     }
     const provider = new BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
@@ -44,8 +33,8 @@ export const useContract = () => {
     setLoading(true);
     try {
       const contract = await getContract();
-      const milestoneDescriptions = milestones.map(m => m.description);
-      const milestoneAmounts = milestones.map(m => parseEther(m.amount));
+      const milestoneDescriptions = milestones.map((m) => m.description);
+      const milestoneAmounts = milestones.map((m) => parseEther(m.amount));
 
       const tx = await contract.createEscrow(
         freelancer,
@@ -59,11 +48,13 @@ export const useContract = () => {
       toast.loading('Creating escrow...', { id: 'create' });
       await tx.wait();
       toast.success('Escrow created successfully!', { id: 'create' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error creating escrow:', error);
-      toast.error(error.message || 'Failed to create escrow', { id: 'create' });
+      toast.error(error?.reason || error?.shortMessage || error?.message || 'Failed to create escrow', {
+        id: 'create',
+      });
       return false;
     } finally {
       setLoading(false);
@@ -75,17 +66,19 @@ export const useContract = () => {
     try {
       const contract = await getContract();
       const tx = await contract.fundEscrow(escrowId, {
-        value: parseEther(amount)
+        value: parseEther(amount),
       });
 
       toast.loading('Funding escrow...', { id: 'fund' });
       await tx.wait();
       toast.success('Escrow funded successfully!', { id: 'fund' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error funding escrow:', error);
-      toast.error(error.message || 'Failed to fund escrow', { id: 'fund' });
+      toast.error(error?.reason || error?.shortMessage || error?.message || 'Failed to fund escrow', {
+        id: 'fund',
+      });
       return false;
     } finally {
       setLoading(false);
@@ -101,11 +94,14 @@ export const useContract = () => {
       toast.loading('Marking milestone as complete...', { id: 'complete' });
       await tx.wait();
       toast.success('Milestone marked as complete!', { id: 'complete' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error completing milestone:', error);
-      toast.error(error.message || 'Failed to complete milestone', { id: 'complete' });
+      toast.error(
+        error?.reason || error?.shortMessage || error?.message || 'Failed to complete milestone',
+        { id: 'complete' }
+      );
       return false;
     } finally {
       setLoading(false);
@@ -121,11 +117,37 @@ export const useContract = () => {
       toast.loading('Approving milestone...', { id: 'approve' });
       await tx.wait();
       toast.success('Milestone approved and payment released!', { id: 'approve' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error approving milestone:', error);
-      toast.error(error.message || 'Failed to approve milestone', { id: 'approve' });
+      toast.error(
+        error?.reason || error?.shortMessage || error?.message || 'Failed to approve milestone',
+        { id: 'approve' }
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelEscrow = async (escrowId: number) => {
+    setLoading(true);
+    try {
+      const contract = await getContract();
+      const tx = await contract.cancelEscrow(escrowId);
+
+      toast.loading('Cancelling escrow...', { id: 'cancel' });
+      await tx.wait();
+      toast.success('Escrow cancelled and funds refunded!', { id: 'cancel' });
+
+      return true;
+    } catch (error: any) {
+      console.error('Error cancelling escrow:', error);
+      toast.error(
+        error?.reason || error?.shortMessage || error?.message || 'Failed to cancel escrow',
+        { id: 'cancel' }
+      );
       return false;
     } finally {
       setLoading(false);
@@ -141,11 +163,14 @@ export const useContract = () => {
       toast.loading('Raising dispute...', { id: 'dispute' });
       await tx.wait();
       toast.success('Dispute raised successfully', { id: 'dispute' });
-      
+
       return true;
     } catch (error: any) {
       console.error('Error raising dispute:', error);
-      toast.error(error.message || 'Failed to raise dispute', { id: 'dispute' });
+      toast.error(
+        error?.reason || error?.shortMessage || error?.message || 'Failed to raise dispute',
+        { id: 'dispute' }
+      );
       return false;
     } finally {
       setLoading(false);
@@ -194,10 +219,10 @@ export const useContract = () => {
   const getUserEscrows = async (address: string, isClient: boolean): Promise<number[]> => {
     try {
       const contract = await getContract();
-      const escrowIds = isClient 
+      const escrowIds = isClient
         ? await contract.getClientEscrows(address)
         : await contract.getFreelancerEscrows(address);
-      
+
       return escrowIds.map((id: bigint) => Number(id));
     } catch (error) {
       console.error('Error fetching user escrows:', error);
@@ -211,6 +236,7 @@ export const useContract = () => {
     fundEscrow,
     completeMilestone,
     approveMilestone,
+    cancelEscrow,
     raiseDispute,
     getEscrowDetails,
     getUserEscrows,
